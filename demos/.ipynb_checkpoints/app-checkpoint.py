@@ -1,5 +1,6 @@
-import tkinter
-import customtkinter
+import tkinter as tk
+from tkinter import Label, Button
+import customtkinter as ctk
 from PIL import Image, ImageTk
 import cv2
 import numpy as np         
@@ -112,22 +113,40 @@ def display_roi():
     else: 
         print("No ROI coordinates defined, please select a region of interest first")
 
-    def on_mouse_click(self, event): # Sets the starting coordinates of the ROI
-        self.roi_start = (event.x, event.y)
-        print("Mouse clicked at:", self.roi_start)
+def start_video(): # Start the video display
+    global running
+    running = True
+    show_frame()
 
-    def on_mouse_drag(self,event): # Updates the changing ROI coordinates
-        if self.roi_start is not None:
-            x1, y1 = self.roi_start
-            x2, y2 = event.x, event.y
-            self.roi_coords = (min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2))
-            self.roi_defined = True
+def stop_video():  # Properly stop the video display
+    global cap, running
+    running = False
 
-    def on_mouse_release(self,event):  # Update final coordinates of the ROI
-        self.on_mouse_drag(event)  # Update coordinates
-        self.display_roi()  # Display the selected ROI
-        self.roi_defined = False  # Reset flag after processing
-        self.roi_start = None  # Reset start coordinates
+def switch_stream():
+    global show_color
+    show_color = not show_color
+
+def on_mouse_click(event): # gets the starting coordinates of the ROI
+    global roi_start
+    roi_start = (event.x, event.y)
+    print("Mouse clicked at:", roi_start)
+
+
+def on_mouse_drag(event): # keeps track of the changing ROI coordinates
+    global roi_coords, roi_defined, roi_start
+    if roi_start is not None:
+        x1, y1 = roi_start
+        x2, y2 = event.x, event.y
+        roi_coords = (min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2))
+        roi_defined = True
+        # print("ROI Coordinates:", roi_coords)
+
+def on_mouse_release(event):
+    global roi_coords, roi_defined, roi_start
+    on_mouse_drag(event)  # Update final coordinates
+    display_roi()  # Display the selected ROI
+    roi_defined = False  # Reset flag after processing
+    roi_start = None  # Reset start coordinates
 
 #realsense setup
 pipeline = rs.pipeline()
